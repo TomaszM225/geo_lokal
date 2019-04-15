@@ -1,9 +1,10 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect, get_list_or_404
 from django.http import HttpResponse, JsonResponse #dla wyświtlania pliku PDF, JSON do przesyłania danych JSON 
+from decimal import Decimal
+import requests
 from geo.models import Lokalizacja
 from geo.forms import LokalizacjaForm
-import requests
-import json
+
 
 def index(request): #Widok strony głównej
     """Strona główna """
@@ -35,3 +36,23 @@ def nowa_lokalizacja(request):
     else:
         form = LokalizacjaForm()
     return render(request, 'geo/nowa_lokalizacja.html', {'form': form})
+
+def zbior_lokalizacji(request):
+    """Szukanie lokalizacji w podanym promieniu"""
+    if request.method == 'POST':
+        your_name = request.POST.get('current_name')
+        szerokosc = Decimal(request.POST.get('szerokosc'))
+        dlugosc = Decimal(request.POST.get('dlugosc'))
+        odleglosc = Decimal(request.POST.get('odleglosc'))
+        promien = odleglosc/111 #przeliczenie sytansu na stopnie dziesiętne 1st = 111km
+        lokalizacje_w_okolicy = get_list_or_404(Lokalizacja, szerokosc__range=((szerokosc-promien), (szerokosc+promien)))
+        print(lokalizacje_w_okolicy)
+        #obsługa liczenia odległosci serializowanie danych
+        data={
+        'dlugosc':dlugosc,
+        'szerokosc':szerokosc,
+        'promien':promien,
+        }
+        return JsonResponse(data, safe=False)
+    else:
+        return render(request, 'geo/zbior_lokalizacji.html')

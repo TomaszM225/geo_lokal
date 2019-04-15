@@ -17,5 +17,4 @@ class Lokalizacja(models.Model):
         verbose_name_plural = "Lokalizacje"
 
     def __str__(self):
-        nazwa = Lokalizacja.objects.get(pk=self.pk)
-        return str(nazwa)
+        return str(self.nazwa)
