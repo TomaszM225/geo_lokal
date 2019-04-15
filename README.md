@@ -6,8 +6,11 @@ The project was created as a test task and is designed to enable the user to fin
 
 # Technologies
 Project is created in:
+
 Python 3.5
+
 Django
+
 MySQL
 
 # Start up
