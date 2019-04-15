@@ -9,8 +9,8 @@ class Lokalizacja(models.Model):
     długość E wartość dodatnia, W wartość ujemna"""
     nazwa =  models.CharField(max_length = 255, help_text = 'Nazwa lokalizacji')
     wysokosc = models.DecimalField(max_digits = 5, decimal_places = 1, default=0.0)
-    szerokosc =  models.DecimalField( max_digits = 9, decimal_places = 5)
-    dlugosc = models.DecimalField(max_digits = 9, decimal_places = 5)
+    szerokosc =  models.DecimalField( max_digits = 9, decimal_places = 6)
+    dlugosc = models.DecimalField(max_digits = 9, decimal_places = 6)
     
     class Meta:
         db_table = 'n_lokalizacje'

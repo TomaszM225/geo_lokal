@@ -82,15 +82,16 @@ def najblizsza_lokalizacja(request):
         dlugosc = Decimal(request.POST.get('dlugosc'))
         lokalizacje_w_okolicy = Lokalizacja.objects.all() #pobiera do porównania wszystkie lokalizacje, mozna zrobic ogranicznik
         Lokalizacje_zbor = {}
-        
+        dmax = 6371 #dystans początkowy obwód ziemi
         for lokalizacje_w_okolicy in lokalizacje_w_okolicy:
             dystans=haversine(lokalizacje_w_okolicy.szerokosc,lokalizacje_w_okolicy.dlugosc,szerokosc,dlugosc)
             lokal = {'nazwa':lokalizacje_w_okolicy.nazwa, 'szerokosc':lokalizacje_w_okolicy.szerokosc,'dlugosc':lokalizacje_w_okolicy.dlugosc,'odleglosc':str(round(dystans, 3))}
-
-            if round(dystans, 3)<=round(dystans, 3) and lokalizacje_w_okolicy.szerokosc!=szerokosc or lokalizacje_w_okolicy.dlugosc!=dlugosc:
-                data = {
-                'najblizsza':lokal
-                }
+            if lokalizacje_w_okolicy.szerokosc!=szerokosc and lokalizacje_w_okolicy.dlugosc!=dlugosc:
+                if dystans < dmax:
+                    dmax = dystans
+                    data = {
+                        'najblizsza':lokal
+                    }
         return JsonResponse(data, safe=False)
     else:
         return render(request,'geo/najblizsza_lokalizacja.html')
