@@ -1,7 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect, get_list_or_404
-from django.http import HttpResponse, JsonResponse #dla wyświtlania pliku PDF, JSON do przesyłania danych JSON 
-from decimal import Decimal
+from django.http import HttpResponse, JsonResponse 
 import requests
+from decimal import Decimal
+from math import radians, cos, sin, asin, sqrt
+
 from geo.models import Lokalizacja
 from geo.forms import LokalizacjaForm
 
@@ -37,22 +39,58 @@ def nowa_lokalizacja(request):
         form = LokalizacjaForm()
     return render(request, 'geo/nowa_lokalizacja.html', {'form': form})
 
+def haversine(dlugosc1, szerokosc1, dlugosc2, szerokosc2):
+    """Obliczanie dystansu pomiedzy punktami reguła Haversine"""
+    # zmiana stopni dziesiętnych na kąt w radianach
+    dlugosc1, szerokosc1, dlugosc2, szerokosc2 = map(radians, [dlugosc1, szerokosc1, dlugosc2, szerokosc2])
+    # reguła Haversine`go
+    d_dlugosc = dlugosc2 - dlugosc1 
+    d_szerokosc = szerokosc2 - szerokosc1 
+    a = sin(d_szerokosc/2)**2 + cos(szerokosc1) * cos(szerokosc2) * sin(d_dlugosc/2)**2
+    c = 2 * asin(sqrt(a)) 
+    r = 6371 # Promień ziemi w km, dla mil warość 3956
+    return c * r
+
 def zbior_lokalizacji(request):
-    """Szukanie lokalizacji w podanym promieniu"""
+    """obsługa zbioru lokalizacjiw okolicy """
     if request.method == 'POST':
-        your_name = request.POST.get('current_name')
+        nazwa = request.POST.get('current_name')
+        odleglosc = Decimal(request.POST.get('odleglosc'))
         szerokosc = Decimal(request.POST.get('szerokosc'))
         dlugosc = Decimal(request.POST.get('dlugosc'))
-        odleglosc = Decimal(request.POST.get('odleglosc'))
-        promien = odleglosc/111 #przeliczenie sytansu na stopnie dziesiętne 1st = 111km
-        lokalizacje_w_okolicy = get_list_or_404(Lokalizacja, szerokosc__range=((szerokosc-promien), (szerokosc+promien)))
-        print(lokalizacje_w_okolicy)
-        #obsługa liczenia odległosci serializowanie danych
+        promien = Decimal(odleglosc/111) #w odległosci 1 st tj 111km
+        lokalizacje_w_okolicy = get_list_or_404(Lokalizacja, szerokosc__range = ((szerokosc-promien), (szerokosc+promien)), dlugosc__range = ((dlugosc-promien), (dlugosc+promien)))
+        Lokalizacje_zbor = {}
+        
+        for lokalizacje_w_okolicy in lokalizacje_w_okolicy:
+            dystans=haversine(lokalizacje_w_okolicy.szerokosc,lokalizacje_w_okolicy.dlugosc,szerokosc,dlugosc)
+            lokal = {'nazwa':lokalizacje_w_okolicy.nazwa, 'szerokosc':lokalizacje_w_okolicy.szerokosc,'dlugosc':lokalizacje_w_okolicy.dlugosc,'odleglosc':str(round(dystans, 3))}
+            Lokalizacje_zbor[str(lokalizacje_w_okolicy.pk)] = lokal
+
         data={
-        'dlugosc':dlugosc,
-        'szerokosc':szerokosc,
-        'promien':promien,
+            'Lokalizacje_zbor':Lokalizacje_zbor
         }
         return JsonResponse(data, safe=False)
     else:
-        return render(request, 'geo/zbior_lokalizacji.html')
+        return render(request,'geo/zbior_lokalizacji.html')
+
+def najblizsza_lokalizacja(request):
+    """wskazanie najbliższej lokalizacji sprawdza wszystkie """
+    if request.method == 'POST':
+        nazwa = request.POST.get('current_name')
+        szerokosc = Decimal(request.POST.get('szerokosc'))
+        dlugosc = Decimal(request.POST.get('dlugosc'))
+        lokalizacje_w_okolicy = Lokalizacja.objects.all() #pobiera do porównania wszystkie lokalizacje, mozna zrobic ogranicznik
+        Lokalizacje_zbor = {}
+        
+        for lokalizacje_w_okolicy in lokalizacje_w_okolicy:
+            dystans=haversine(lokalizacje_w_okolicy.szerokosc,lokalizacje_w_okolicy.dlugosc,szerokosc,dlugosc)
+            lokal = {'nazwa':lokalizacje_w_okolicy.nazwa, 'szerokosc':lokalizacje_w_okolicy.szerokosc,'dlugosc':lokalizacje_w_okolicy.dlugosc,'odleglosc':str(round(dystans, 3))}
+
+            if round(dystans, 3)<=round(dystans, 3) and lokalizacje_w_okolicy.szerokosc!=szerokosc or lokalizacje_w_okolicy.dlugosc!=dlugosc:
+                data = {
+                'najblizsza':lokal
+                }
+        return JsonResponse(data, safe=False)
+    else:
+        return render(request,'geo/najblizsza_lokalizacja.html')
