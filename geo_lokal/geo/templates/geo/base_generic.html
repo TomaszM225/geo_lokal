@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  {% block title %}<title>TEST kegle.pl</title>{% endblock %}
+  {% block title %}<title>Geo lokalizacja</title>{% endblock %}
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
@@ -18,8 +18,8 @@
         <ul class="sidebar-nav">
           <li><a href="{% url 'index' %}">Główna</a></li>
           <li><a href="{% url 'nowa_lokalizacja' %}">Dodaj nową lokalizacje</a></li>
-          <li><a href="">InnyLink</a></li>
-          <li><a href="">InnyLink</a></li>
+          <li><a href="{% url 'zbior_lokalizacji' %}">Lokalizacje w okolicy</a></li>
+          <li><a href="{% url 'najblizsza_lokalizacja' %}">Najbliższa lok</a></li>
         </ul>
       {% endblock %}
       </div>

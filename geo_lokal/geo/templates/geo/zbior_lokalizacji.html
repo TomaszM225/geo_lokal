@@ -1,0 +1,17 @@
+{% extends "geo/base_generic.html" %}
+
+{% block content %}
+
+   <h2>Lokalizacja </h2>
+   
+    <form method="POST" >{% csrf_token %}
+        <label>Nazwa Usera</label> <input type="text" name="current_name" /></br>
+        <label>Odległość w km</label> <input type="number" name="odleglosc" /></br>
+        <label>Długość</label> <input type="number" name="dlugosc" /></br>
+        <label>Szerokosc</label> <input type="number" name="szerokosc" /></br>
+        <button type="submit" >wyslij</button>
+    </form>
+{% if data %}
+{{data}}
+{% endif %}
+{% endblock %}

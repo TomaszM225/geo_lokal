@@ -1,0 +1,19 @@
+{% extends "geo/base_generic.html" %}
+
+{% block content %}
+
+   <h2>Najbliższ lokalizacja </h2>
+   
+    <form method="POST" class="post-form">{% csrf_token %}
+
+        <label>Nazwa Usera</label> <input type="text" name="current_name" /></br>
+        <label>Długość</label> <input type="number" step="any" name="dlugosc" /></br>
+        <label>Szerokosc</label> <input type="number" step="any" name="szerokosc" /></br>
+
+        <button type="submit" class="save btn btn-default">wyslij</button>
+    </form>
+{% if data %}
+{{data}}
+
+{% endif %}
+{% endblock %}
